@@ -1,13 +1,14 @@
 import os
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
-import anthropic
+from google import genai
+from google.genai import types
 
 app = Flask(__name__)
 CORS(app)
 
-api_key = os.environ.get("ANTHROPIC_API_KEY")
-client = anthropic.Anthropic(api_key=api_key) if api_key else None
+api_key = os.environ.get("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else None
 
 SYSTEM_PROMPT = """You are Saathiya AI, a supportive companion for teenagers aged 13-18 in India.
 
@@ -81,21 +82,24 @@ def chat():
         return jsonify({"reply": CRISIS_MESSAGE, "crisis": True})
 
     if client is None:
-        return jsonify({"error": "ANTHROPIC_API_KEY set nahi hai server par"}), 500
+        return jsonify({"error": "GEMINI_API_KEY set nahi hai server par"}), 500
 
-    messages = list(history) + [{"role": "user", "content": user_message}]
-    messages = messages[-20:]
+    contents = []
+    for msg in history[-20:]:
+        role = "model" if msg.get("role") == "assistant" else "user"
+        contents.append({"role": role, "parts": [{"text": msg.get("content", "")}]})
+    contents.append({"role": "user", "parts": [{"text": user_message}]})
 
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1000,
-            system=SYSTEM_PROMPT,
-            messages=messages
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=1000,
+            ),
         )
-        reply_text = "".join(
-            block.text for block in response.content if block.type == "text"
-        ).strip()
+        reply_text = (response.text or "").strip()
         if not reply_text:
             reply_text = "Sorry, mujhe samajh nahi aaya. Phir se try karo?"
         return jsonify({"reply": reply_text, "crisis": False})
