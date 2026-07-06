@@ -4,73 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy — Saathiya AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Hind:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#16213E;
-    --paper:#FBF1E0;
-    --ink:#2B2420;
+    --bg-0:#0a0e1a;
+    --bg-1:#0e1326;
+    --glass-fill: rgba(255,255,255,0.055);
+    --glass-fill-strong: rgba(255,255,255,0.09);
+    --glass-border: rgba(255,255,255,0.10);
+    --text-hi:#F1F3FA;
+    --text-mid:#AEB6CF;
+    --text-low:#7882A3;
     --marigold:#F2A93B;
+    --marigold-soft: rgba(242,169,59,0.16);
+    --marigold-line: rgba(242,169,59,0.35);
     --teal:#3FA796;
+    --teal-soft: rgba(63,167,150,0.16);
+    --font-ui:'Plus Jakarta Sans','Hind',sans-serif;
+    --font-body:'Hind',sans-serif;
+    --font-brand:'Kalam',cursive;
   }
   *{box-sizing:border-box;}
+  html,body{margin:0;}
   body{
-    margin:0;
-    font-family:'Segoe UI',Arial,sans-serif;
-    background:var(--bg);
-    color:var(--ink);
+    font-family:var(--font-body);
+    background:var(--bg-0);
+    color:var(--text-hi);
     display:flex;
     justify-content:center;
-  }
-  main{
-    width:100%;
-    max-width:680px;
-    background:var(--paper);
-    padding:32px 24px 60px;
     min-height:100vh;
   }
+  .ambient{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(620px 480px at 10% -8%, rgba(242,169,59,0.14), transparent 60%),
+      radial-gradient(560px 460px at 100% 0%, rgba(63,167,150,0.10), transparent 60%),
+      var(--bg-0);
+  }
+  main{
+    position:relative; z-index:1;
+    width:100%;
+    max-width:720px;
+    background: var(--glass-fill);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-left:1px solid var(--glass-border);
+    border-right:1px solid var(--glass-border);
+    padding:40px 32px 70px;
+    min-height:100vh;
+  }
+  .back{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:26px;
+    color:var(--teal);
+    text-decoration:none;
+    font-family:var(--font-ui);
+    font-weight:600;
+    font-size:0.88rem;
+  }
+  .back:hover{ text-decoration:underline; }
   h1{
-    color:var(--bg);
-    font-size:1.6rem;
-    margin-bottom:4px;
+    font-family:var(--font-brand);
+    color:var(--marigold);
+    font-size:2rem;
+    margin:0 0 6px;
   }
   .updated{
-    color:#6b6258;
-    font-size:0.85rem;
-    margin-bottom:28px;
+    font-family:var(--font-ui);
+    color:var(--text-low);
+    font-size:0.82rem;
+    margin-bottom:30px;
   }
   h2{
-    color:var(--bg);
-    font-size:1.1rem;
-    border-left:4px solid var(--marigold);
-    padding-left:10px;
-    margin-top:32px;
+    font-family:var(--font-ui);
+    color:var(--text-hi);
+    font-size:1.05rem;
+    border-left:3px solid var(--marigold);
+    padding-left:12px;
+    margin-top:34px;
   }
   p, li{
-    line-height:1.65;
+    line-height:1.7;
     font-size:0.96rem;
+    color:var(--text-mid);
   }
   a{ color:var(--teal); }
-  .back{
-    display:inline-block;
-    margin-bottom:24px;
-    color:var(--bg);
-    text-decoration:none;
-    font-weight:600;
-    font-size:0.9rem;
-  }
   .highlight{
-    background:rgba(63,167,150,0.15);
-    border:1px solid var(--teal);
-    border-radius:8px;
-    padding:14px 16px;
-    margin:20px 0;
+    background:var(--teal-soft);
+    border:1px solid rgba(63,167,150,0.4);
+    border-radius:14px;
+    padding:16px 18px;
+    margin:22px 0;
+    color:var(--text-hi);
+  }
+  .highlight strong{ color:var(--marigold); }
+  @media (max-width:600px){
+    main{ padding:28px 20px 56px; }
+    h1{ font-size:1.6rem; }
   }
 </style>
 </head>
 <body>
+<div class="ambient"></div>
 <main>
   <a class="back" href="/">← Saathiya AI par wapas jaayein</a>
-  <h1>Privacy Policy — Saathiya AI</h1>
+  <h1>Privacy Policy</h1>
   <p class="updated">Last updated: June 19, 2026</p>
 
   <p>Saathiya AI ("the App", "we", "us") is a supportive chatbot designed to help teenagers (ages 13–18) with general health, body, and emotional wellbeing questions in simple Hindi/Hinglish. This Privacy Policy explains what information the App handles and how.</p>
@@ -110,7 +152,7 @@
   <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last updated" date.</p>
 
   <h2>11. Contact</h2>
-  <p>If you have questions about this Privacy Policy, you can reach the developer at: <strong>[kailashrajak098@gmail.com]</strong>.</p>
+  <p>If you have questions about this Privacy Policy, you can reach the developer at: <strong>[your contact email here]</strong>.</p>
 </main>
 </body>
-  </html>
+</html>

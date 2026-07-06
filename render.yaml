@@ -7,3 +7,9 @@ services:
     envVars:
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: SECRET_KEY
+        generateValue: true   # Render automatically ek secure random value set karega
+      - key: GOOGLE_CLIENT_ID
+        sync: false           # Google Cloud Console se milega (optional)
+      - key: DATABASE_URL
+        sync: false           # Optional: PostgreSQL URL; nahi diya to SQLite use hogi

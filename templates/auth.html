@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Login — Saathiya AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Hind:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Design Tokens (same as index.html) ───────────────── */
+:root{
+  --bg-0:#0a0e1a; --bg-1:#0e1326;
+  --glass-fill:rgba(255,255,255,0.06);
+  --glass-fill-strong:rgba(255,255,255,0.10);
+  --glass-border:rgba(255,255,255,0.11);
+  --glass-border-soft:rgba(255,255,255,0.06);
+  --text-hi:#F1F3FA; --text-mid:#AEB6CF; --text-low:#7882A3;
+  --marigold:#F2A93B;
+  --marigold-soft:rgba(242,169,59,0.16);
+  --marigold-line:rgba(242,169,59,0.38);
+  --teal:#3FA796;
+  --teal-soft:rgba(63,167,150,0.16);
+  --rose:#E2685A;
+  --radius-lg:22px; --radius-md:16px; --radius-sm:10px;
+  --shadow-pop:0 16px 40px rgba(0,0,0,0.45);
+  --font-ui:'Plus Jakarta Sans','Hind',sans-serif;
+  --font-body:'Hind',sans-serif;
+  --font-brand:'Kalam',cursive;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; font-family:var(--font-body); background:var(--bg-0); color:var(--text-hi); }
+
+/* ── Ambient Background ─────────────────────────────── */
+.ambient{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(600px 480px at 10% -5%, rgba(242,169,59,0.18), transparent 60%),
+    radial-gradient(500px 400px at 95% 5%,  rgba(63,167,150,0.14), transparent 60%),
+    radial-gradient(600px 500px at 50% 110%,rgba(226,104,90,0.09), transparent 60%),
+    var(--bg-0);
+}
+.glow-orb{ position:absolute; border-radius:50%; filter:blur(60px); animation:breathe 9s ease-in-out infinite; }
+.glow-orb.one{ width:260px;height:260px;left:-50px;top:-50px;background:var(--marigold);opacity:0.45; }
+.glow-orb.two{ width:220px;height:220px;right:-40px;top:80px;background:var(--teal);opacity:0.4;animation-delay:2.5s; }
+@keyframes breathe{ 0%,100%{transform:scale(1);opacity:.4} 50%{transform:scale(1.18);opacity:.6} }
+@media(prefers-reduced-motion:reduce){ .glow-orb{animation:none} }
+
+/* ── Auth Shell ─────────────────────────────────────── */
+.auth-shell{
+  position:relative; z-index:1;
+  display:flex; min-height:100vh;
+}
+
+/* ── Left Brand Panel (desktop only) ────────────────── */
+.auth-left{
+  flex:0 0 420px;
+  display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+  padding:60px 52px;
+  background:linear-gradient(160deg, rgba(242,169,59,0.10) 0%, rgba(63,167,150,0.05) 100%);
+  border-right:1px solid var(--glass-border-soft);
+  position:relative; overflow:hidden;
+}
+.auth-left-inner{ position:relative; z-index:1; }
+.auth-left-lamp{ font-size:4rem; line-height:1; margin-bottom:18px;
+  filter:drop-shadow(0 0 20px rgba(242,169,59,0.6)); }
+.auth-left-name{ font-family:var(--font-brand); font-size:2.6rem; color:var(--marigold);
+  line-height:1.1; margin-bottom:6px; }
+.auth-left-tag{ font-family:var(--font-ui); font-size:1.05rem; color:var(--text-mid);
+  margin-bottom:36px; }
+.auth-features{ list-style:none; display:flex; flex-direction:column; gap:14px; }
+.auth-features li{ font-family:var(--font-ui); font-size:0.92rem; color:var(--text-mid);
+  display:flex; align-items:center; gap:10px; }
+.auth-features li::before{ content:''; display:block; width:4px; height:4px;
+  border-radius:50%; background:var(--marigold); flex:0 0 auto; }
+
+.auth-left-deco{ /* decorative circle */ position:absolute;
+  width:350px; height:350px; border-radius:50%; right:-140px; bottom:-100px;
+  border:1px solid var(--marigold-line); opacity:0.3; }
+.auth-left-deco2{ position:absolute; width:200px; height:200px; border-radius:50%;
+  left:-80px; top:-60px; border:1px solid rgba(63,167,150,0.3); opacity:0.3; }
+
+/* ── Right Form Panel ───────────────────────────────── */
+.auth-right{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:32px 20px;
+  min-height:100vh;
+}
+.auth-card{
+  width:100%; max-width:400px;
+  background:var(--glass-fill-strong);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  padding:36px 32px 28px;
+  box-shadow:var(--shadow-pop);
+}
+
+/* Mobile logo (hidden on desktop where left panel shows) */
+.auth-mobile-brand{
+  display:none;
+  font-family:var(--font-brand); color:var(--marigold);
+  font-size:1.6rem; text-align:center; margin-bottom:22px;
+}
+
+/* ── Tab Switcher ───────────────────────────────────── */
+.auth-tabs{
+  display:flex; background:rgba(0,0,0,0.3);
+  border:1px solid var(--glass-border-soft);
+  border-radius:var(--radius-sm);
+  padding:3px; margin-bottom:24px;
+}
+.auth-tab{
+  flex:1; font-family:var(--font-ui); font-size:0.88rem; font-weight:600;
+  background:transparent; border:none; color:var(--text-low);
+  padding:9px 8px; border-radius:8px; cursor:pointer;
+  transition:background .2s ease, color .2s ease;
+}
+.auth-tab.active{ background:var(--glass-fill-strong); color:var(--text-hi);
+  box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+
+/* ── Error / Success Messages ───────────────────────── */
+.auth-error{
+  background:rgba(226,104,90,0.18); border:1px solid rgba(226,104,90,0.4);
+  color:#f5a49b; border-radius:var(--radius-sm); padding:10px 14px;
+  font-family:var(--font-ui); font-size:0.84rem; margin-bottom:16px;
+}
+.auth-success-msg{
+  background:var(--teal-soft); border:1px solid rgba(63,167,150,0.45);
+  color:#a3ddd5; border-radius:var(--radius-sm); padding:10px 14px;
+  font-family:var(--font-ui); font-size:0.84rem; margin-top:12px;
+}
+
+/* ── Form Elements ──────────────────────────────────── */
+.form-group{ margin-bottom:14px; }
+.form-label{
+  display:block; font-family:var(--font-ui); font-size:0.75rem;
+  color:var(--text-low); letter-spacing:.04em; text-transform:uppercase;
+  margin-bottom:6px;
+}
+.form-hint{ font-size:0.72rem; color:var(--text-low); text-transform:none; letter-spacing:0; }
+.form-input{
+  width:100%; padding:11px 14px;
+  background:rgba(0,0,0,0.25); border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm); color:var(--text-hi);
+  font-family:var(--font-body); font-size:0.94rem;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.form-input::placeholder{ color:var(--text-low); }
+.form-input:focus{ outline:none; border-color:var(--marigold-line);
+  box-shadow:0 0 0 3px var(--marigold-soft); }
+.form-input:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 100px #0e1326 inset;
+  -webkit-text-fill-color:var(--text-hi);
+}
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn-primary{
+  width:100%; padding:13px; margin-top:4px;
+  background:linear-gradient(135deg,var(--marigold),#e0922a);
+  color:#241900; border:none; border-radius:var(--radius-sm);
+  font-family:var(--font-ui); font-weight:700; font-size:0.96rem;
+  cursor:pointer; transition:opacity .18s ease, transform .15s ease;
+}
+.btn-primary:hover:not(:disabled){ opacity:0.88; transform:translateY(-1px); }
+.btn-primary:active:not(:disabled){ transform:translateY(0); }
+.btn-primary:disabled{ opacity:0.45; cursor:not-allowed; }
+
+.btn-google{
+  width:100%; padding:11px 14px; margin-bottom:4px;
+  background:rgba(255,255,255,0.95); color:#3c4043;
+  border:1px solid rgba(255,255,255,0.4);
+  border-radius:var(--radius-sm);
+  font-family:var(--font-ui); font-weight:600; font-size:0.9rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:background .18s ease, box-shadow .18s ease;
+}
+.btn-google:hover{ background:#fff; box-shadow:0 4px 14px rgba(0,0,0,0.3); }
+.btn-google svg{ width:18px; height:18px; flex:0 0 auto; }
+
+.btn-guest{
+  width:100%; padding:11px;
+  background:var(--teal-soft); border:1px solid rgba(63,167,150,0.45);
+  color:#a3ddd5; border-radius:var(--radius-sm);
+  font-family:var(--font-ui); font-weight:600; font-size:0.88rem;
+  cursor:pointer; transition:background .18s ease;
+}
+.btn-guest:hover{ background:rgba(63,167,150,0.28); }
+
+/* ── Divider ────────────────────────────────────────── */
+.auth-divider{
+  display:flex; align-items:center; gap:10px; margin:16px 0;
+}
+.auth-divider::before,.auth-divider::after{
+  content:''; flex:1; height:1px; background:var(--glass-border);
+}
+.auth-divider span{
+  font-family:var(--font-ui); font-size:0.75rem; color:var(--text-low);
+  white-space:nowrap;
+}
+
+/* ── Forgot Password ────────────────────────────────── */
+.form-forgot{
+  text-align:right; margin-top:-6px; margin-bottom:14px;
+}
+.form-forgot button{
+  background:none; border:none; color:var(--teal);
+  font-family:var(--font-ui); font-size:0.82rem; cursor:pointer;
+}
+.form-forgot button:hover{ text-decoration:underline; }
+
+.auth-back-btn{
+  background:none; border:none; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:0.84rem; cursor:pointer;
+  margin-bottom:12px; padding:0; display:inline-flex; align-items:center; gap:4px;
+}
+.auth-back-btn:hover{ color:var(--text-hi); }
+.forgot-desc{ font-family:var(--font-ui); font-size:0.88rem;
+  color:var(--text-mid); margin-bottom:16px; line-height:1.5; }
+
+/* ── Guest Section ──────────────────────────────────── */
+.auth-guest-wrap{
+  border-top:1px solid var(--glass-border-soft);
+  margin-top:20px; padding-top:18px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.guest-note{
+  font-family:var(--font-ui); font-size:0.75rem;
+  color:var(--text-low); text-align:center;
+}
+
+/* ── Privacy note ───────────────────────────────────── */
+.auth-privacy{
+  font-family:var(--font-ui); font-size:0.72rem; color:var(--text-low);
+  text-align:center; margin-top:16px;
+}
+.auth-privacy a{ color:var(--teal); text-decoration:none; }
+.auth-privacy a:hover{ text-decoration:underline; }
+
+/* ── Loading spinner ────────────────────────────────── */
+.btn-loading{ position:relative; color:transparent !important; }
+.btn-loading::after{
+  content:''; position:absolute; width:16px; height:16px;
+  border:2px solid rgba(36,25,0,0.4); border-top-color:#241900;
+  border-radius:50%; animation:spin .7s linear infinite;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+}
+@keyframes spin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media(max-width:700px){
+  .auth-left{ display:none; }
+  .auth-mobile-brand{ display:block; }
+  .auth-card{ padding:28px 22px 22px; }
+  .auth-right{ align-items:flex-start; padding-top:24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="glow-orb one"></div>
+  <div class="glow-orb two"></div>
+</div>
+
+<div class="auth-shell">
+
+  <!-- ── Left Brand Panel ───────────────────────────── -->
+  <div class="auth-left">
+    <div class="auth-left-deco"></div>
+    <div class="auth-left-deco2"></div>
+    <div class="auth-left-inner">
+      <div class="auth-left-lamp">🪔</div>
+      <div class="auth-left-name">Saathiya AI</div>
+      <div class="auth-left-tag">Tumhari judgment-free dost</div>
+      <ul class="auth-features">
+        <li>Hindi / Hinglish mein baat karo</li>
+        <li>Health, body, emotions — safe space</li>
+        <li>Privacy-first — koi data store nahi</li>
+        <li>Crisis support hamesha available</li>
+        <li>Doctor nahi, par caring companion hai</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Right Form Panel ───────────────────────────── -->
+  <div class="auth-right">
+    <div class="auth-card" role="main">
+
+      <!-- Mobile brand (only shows on small screens) -->
+      <div class="auth-mobile-brand">🪔 Saathiya AI</div>
+
+      <!-- Error message (hidden by default) -->
+      <div class="auth-error" id="authError" style="display:none" role="alert"></div>
+
+      <!-- ── Google Sign-In ────────────────────────── -->
+      {% if google_client_id %}
+      <button class="btn-google" id="googleBtn" type="button">
+        <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Google se Sign In Karo
+      </button>
+      <div class="auth-divider"><span>ya email se</span></div>
+      {% endif %}
+
+      <!-- ── Tab Switcher ──────────────────────────── -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tabLogin" role="tab"
+                aria-selected="true" onclick="showTab('login')">Login</button>
+        <button class="auth-tab" id="tabSignup" role="tab"
+                aria-selected="false" onclick="showTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- ── Login Form ────────────────────────────── -->
+      <form id="loginForm" autocomplete="on" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email</label>
+          <input class="form-input" type="email" id="loginEmail" name="email"
+                 placeholder="tumhari@email.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input class="form-input" type="password" id="loginPassword" name="password"
+                 placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <div class="form-forgot">
+          <button type="button" onclick="showForgot()">Password bhool gaye? 🔑</button>
+        </div>
+        <button class="btn-primary" type="submit" id="loginBtn">Login Karo →</button>
+      </form>
+
+      <!-- ── Sign Up Form (hidden) ─────────────────── -->
+      <form id="signupForm" autocomplete="on" novalidate style="display:none">
+        <div class="form-group">
+          <label class="form-label" for="signupName">Naam</label>
+          <input class="form-input" type="text" id="signupName" name="name"
+                 placeholder="Tumhara naam" autocomplete="name" required maxlength="80">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signupEmail">Email</label>
+          <input class="form-input" type="email" id="signupEmail" name="email"
+                 placeholder="tumhari@email.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signupPassword">
+            Password <span class="form-hint">(6+ characters)</span>
+          </label>
+          <input class="form-input" type="password" id="signupPassword" name="password"
+                 placeholder="••••••••" autocomplete="new-password" required minlength="6">
+        </div>
+        <button class="btn-primary" type="submit" id="signupBtn">Account Banao →</button>
+      </form>
+
+      <!-- ── Forgot Password (hidden) ─────────────── -->
+      <div id="forgotSection" style="display:none">
+        <button class="auth-back-btn" type="button" onclick="hideForgot()">← Wapas Jao</button>
+        <p class="forgot-desc">Apna registered email likho — hum reset instructions bhejenge.</p>
+        <div class="form-group">
+          <label class="form-label" for="forgotEmail">Email</label>
+          <input class="form-input" type="email" id="forgotEmail"
+                 placeholder="tumhari@email.com" autocomplete="email">
+        </div>
+        <button class="btn-primary" id="forgotBtn" type="button">Reset Link Bhejo →</button>
+        <div class="auth-success-msg" id="forgotSuccess" style="display:none">
+          ✅ Agar email registered hai, instructions bhej di gayi hain!
+        </div>
+      </div>
+
+      <!-- ── Guest Mode ────────────────────────────── -->
+      <div class="auth-guest-wrap">
+        <button class="btn-guest" type="button" id="guestBtn">
+          👤 Guest ke taur par continue karo
+        </button>
+        <p class="guest-note">History save nahi hogi · Kabhi bhi login kar sakte ho</p>
+      </div>
+
+      <p class="auth-privacy">
+        Is app ka use karke tum hamare
+        <a href="/privacy" target="_blank">Privacy Policy</a> se agree karte ho.
+        ⚠️ Saathiya AI doctor nahi hai.
+      </p>
+
+    </div><!-- /.auth-card -->
+  </div><!-- /.auth-right -->
+
+</div><!-- /.auth-shell -->
+
+{% if google_client_id %}
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+// Google Identity Services initialize karo
+window.onload = function() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: "{{ google_client_id }}",
+      callback: handleGoogleCredential,
+    });
+  }
+};
+</script>
+{% endif %}
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   AUTH PAGE LOGIC
+   ═══════════════════════════════════════════════════════════ */
+
+// ── Helpers ──────────────────────────────────────────────
+
+function showError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function clearError() {
+  const el = document.getElementById('authError');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+function setLoading(btn, loading) {
+  btn.disabled = loading;
+  if (loading) btn.classList.add('btn-loading');
+  else btn.classList.remove('btn-loading');
+}
+
+async function apiPost(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  return { ok: res.ok, status: res.status, data };
+}
+
+function goToChat() {
+  window.location.href = '/';
+}
+
+// ── Tab Switching ─────────────────────────────────────────
+
+function showTab(tab) {
+  clearError();
+  const isLogin = (tab === 'login');
+  document.getElementById('loginForm').style.display  = isLogin ? '' : 'none';
+  document.getElementById('signupForm').style.display = isLogin ? 'none' : '';
+  document.getElementById('forgotSection').style.display = 'none';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+  document.getElementById('tabLogin').setAttribute('aria-selected', isLogin);
+  document.getElementById('tabSignup').setAttribute('aria-selected', !isLogin);
+}
+
+// ── Forgot Password ───────────────────────────────────────
+
+function showForgot() {
+  clearError();
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('forgotSection').style.display = '';
+  document.getElementById('forgotSuccess').style.display = 'none';
+  // Reset tab UI (neither active)
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('tabSignup').classList.remove('active');
+}
+
+function hideForgot() {
+  document.getElementById('forgotSection').style.display = 'none';
+  showTab('login');
+}
+
+document.getElementById('forgotBtn').addEventListener('click', async function() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { showError('Email daalo'); return; }
+  setLoading(this, true); clearError();
+  try {
+    await apiPost('/api/auth/forgot-password', { email });
+    document.getElementById('forgotSuccess').style.display = 'block';
+  } catch(e) {
+    showError('Network error. Dobara try karo.');
+  }
+  setLoading(this, false);
+});
+
+// ── Login Form ────────────────────────────────────────────
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  clearError();
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showError('Email aur password dono zaroori hain'); return; }
+  const btn = document.getElementById('loginBtn');
+  setLoading(btn, true);
+  try {
+    const { ok, data } = await apiPost('/api/auth/login', { email, password });
+    if (ok) { goToChat(); }
+    else { showError(data.error || 'Login fail ho gaya'); }
+  } catch(e) {
+    showError('Network error. Internet check karo.');
+  }
+  setLoading(btn, false);
+});
+
+// ── Sign Up Form ──────────────────────────────────────────
+
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  clearError();
+  const name     = document.getElementById('signupName').value.trim();
+  const email    = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  if (!name || !email || !password) { showError('Sab fields zaroori hain'); return; }
+  if (password.length < 6) { showError('Password 6 characters se zyada hona chahiye'); return; }
+  const btn = document.getElementById('signupBtn');
+  setLoading(btn, true);
+  try {
+    const { ok, data } = await apiPost('/api/auth/signup', { name, email, password });
+    if (ok) { goToChat(); }
+    else { showError(data.error || 'Signup fail ho gaya'); }
+  } catch(e) {
+    showError('Network error. Internet check karo.');
+  }
+  setLoading(btn, false);
+});
+
+// ── Google Sign-In ────────────────────────────────────────
+
+{% if google_client_id %}
+async function handleGoogleCredential(response) {
+  clearError();
+  const btn = document.getElementById('googleBtn');
+  setLoading(btn, true);
+  try {
+    const { ok, data } = await apiPost('/api/auth/google', { credential: response.credential });
+    if (ok) { goToChat(); }
+    else { showError(data.error || 'Google login fail ho gaya'); }
+  } catch(e) {
+    showError('Network error. Internet check karo.');
+  }
+  setLoading(btn, false);
+}
+
+document.getElementById('googleBtn').addEventListener('click', function() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.prompt();
+  } else {
+    showError('Google Sign-In load nahi hua. Page refresh karo.');
+  }
+});
+{% endif %}
+
+// ── Guest Mode ────────────────────────────────────────────
+
+document.getElementById('guestBtn').addEventListener('click', async function() {
+  setLoading(this, true);
+  try {
+    const { ok } = await apiPost('/api/auth/guest', {});
+    if (ok) { goToChat(); }
+    else { showError('Guest mode mein kuch problem aayi'); }
+  } catch(e) {
+    showError('Network error. Internet check karo.');
+  }
+  setLoading(this, false);
+});
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "saathiya-ai-v2";
+const CACHE_NAME = "saathiya-ai-v1";
 const PRECACHE_URLS = ["/"];
 
 self.addEventListener("install", (event) => {
@@ -20,19 +20,23 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
+  // Never cache chat API calls - always go to network so replies stay fresh
   if (url.pathname.startsWith("/api/")) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    caches.match(event.request).then((cached) => {
+      const networkFetch = fetch(event.request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => cached);
+      return cached || networkFetch;
+    })
   );
 });

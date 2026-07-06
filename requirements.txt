@@ -1,4 +1,8 @@
 flask
 flask-cors
-google-genai
+anthropic
 gunicorn
+flask-login
+flask-sqlalchemy
+werkzeug
+google-auth
