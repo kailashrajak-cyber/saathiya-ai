@@ -9,8 +9,8 @@ import os
 
 class Config:
     # --- AI Provider (Anthropic Claude) ---
-    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-    AI_MODEL          = os.environ.get("AI_MODEL", "claude-sonnet-4-6")
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    AI_MODEL = os.environ.get("AI_MODEL", "gemini-2.5-flash")
     AI_MAX_TOKENS     = int(os.environ.get("AI_MAX_TOKENS", 1000))
 
     # --- Server ---
