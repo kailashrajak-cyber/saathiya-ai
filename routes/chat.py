@@ -36,7 +36,7 @@ def chat():
         return jsonify(ChatReply(reply=CRISIS_MESSAGE, crisis=True).to_dict())
 
     if not ai_service.is_configured():
-        return jsonify({"error": "ANTHROPIC_API_KEY set nahi hai server par"}), 500
+        return jsonify({"error": "GEMINI_API_KEY set nahi hai server par"}), 500
 
     try:
         reply_text = ai_service.generate_reply(
