@@ -39,8 +39,23 @@ def chat():
         return jsonify({"error": "GEMINI_API_KEY set nahi hai server par"}), 500
 
     try:
+      memory = {}
+
+if current_user.is_authenticated:
+    memory = get_memory(current_user.id)
+
+    text = chat_request.message.lower()
+
+    if "mera naam" in text:
+        name = chat_request.message.replace("Mera naam", "").replace("mera naam", "").replace("hai", "").strip()
+
+        if name:
+            save_memory(current_user.id, "name", name)
+            memory["name"] = name
         reply_text = ai_service.generate_reply(
-            chat_request.message, chat_request.history
+            chat_request.message,
+chat_request.history,
+memory=memory
         )
         return jsonify(ChatReply(reply=reply_text, crisis=False).to_dict())
     except Exception as e:
