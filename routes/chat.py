@@ -18,7 +18,7 @@ from services import gemini as ai_service
 from utils.crisis import is_crisis
 from flask_login import current_user
 from services.memory import get_memory, save_memory
-
+from services.rate_limit import can_chat
 chat_bp = Blueprint("chat", __name__)
 
 
@@ -30,6 +30,17 @@ def chat():
 
     if not chat_request.message:
         return jsonify({"error": "Message khaali nahi ho sakta"}), 400
+      # Free usage limit
+if current_user.is_authenticated:
+    user_key = f"user_{current_user.id}"
+else:
+    user_key = request.remote_addr or "guest"
+
+if not can_chat(user_key):
+    return jsonify({
+        "reply": "⚠️ Aaj ki free limit khatam ho gayi hai. Kal phir try kariye.",
+        "crisis": False
+    })
 
     # Safety check happens before any AI call.
     if is_crisis(chat_request.message):
