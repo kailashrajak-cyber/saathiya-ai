@@ -18,6 +18,7 @@ def is_configured():
 def generate_reply(
     user_message: str,
     history: list,
+    memory: dict = None,
     system_prompt: str = None,
 ) -> str:
     """
@@ -28,6 +29,10 @@ def generate_reply(
         raise RuntimeError("GEMINI_API_KEY set nahi hai server par")
 
     system = system_prompt or SYSTEM_PROMPT
+    if memory:
+    system += "\n\nUser Memory:\n"
+    for key, value in memory.items():
+        system += f"{key}: {value}\n"
 
     conversation = system + "\n\n"
 
