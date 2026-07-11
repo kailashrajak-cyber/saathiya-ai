@@ -29,7 +29,10 @@ def chat():
     chat_request = ChatRequest.from_json(raw_data)
 
     if not chat_request.message:
-        return jsonify({"error": "Message khaali nahi ho sakta"}), 400
+        return jsonify({
+    "reply": "⚠️ Aaj ki free limit khatam ho gayi hai. Kal phir try kariye.",
+    "crisis": False
+}), 429
       # Free usage limit
 if current_user.is_authenticated:
     user_key = f"user_{current_user.id}"
