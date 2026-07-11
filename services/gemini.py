@@ -29,10 +29,12 @@ def generate_reply(
         raise RuntimeError("GEMINI_API_KEY set nahi hai server par")
 
     system = system_prompt or SYSTEM_PROMPT
+
+    # User Memory
     if memory:
-    system += "\n\nUser Memory:\n"
-    for key, value in memory.items():
-        system += f"{key}: {value}\n"
+        system += "\n\nUser Memory:\n"
+        for key, value in memory.items():
+            system += f"{key}: {value}\n"
 
     conversation = system + "\n\n"
 
@@ -44,7 +46,6 @@ def generate_reply(
     conversation += f"user: {user_message}\nassistant:"
 
     model = genai.GenerativeModel(Config.AI_MODEL)
-
     response = model.generate_content(conversation)
 
     if hasattr(response, "text") and response.text:
