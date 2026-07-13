@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 
 from config import CRISIS_MESSAGE
 from models.chat import ChatRequest, ChatReply
+from models.history import Conversation, Message
+from models.user import db
 from services import gemini as ai_service
 from utils.crisis import is_crisis
 from flask_login import current_user
@@ -75,6 +77,17 @@ def chat():
             chat_request.history,
             memory=memory
         )
+
+        # -------- Save Chat History --------
+        if current_user.is_authenticated:
+            conversation = Conversation.query.filter_by(user_id=current_user.id).order_by(Conversation.updated_at.desc()).first()
+            if conversation is None:
+                conversation = Conversation(user_id=current_user.id, title=chat_request.message[:40])
+                db.session.add(conversation)
+                db.session.commit()
+            db.session.add(Message(conversation_id=conversation.id, role="user", content=chat_request.message))
+            db.session.add(Message(conversation_id=conversation.id, role="assistant", content=reply_text))
+            db.session.commit()
 
         return jsonify(
             ChatReply(
