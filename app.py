@@ -12,7 +12,8 @@ from config import Config
 from models.user import db, User
 from routes.chat import chat_bp
 from routes.pages import pages_bp
-from routes.auth import auth_bp          # NEW
+from routes.auth import auth_bp 
+from routes.history import history_bp # NEW
 
 
 def create_app() -> Flask:
@@ -45,7 +46,7 @@ def create_app() -> Flask:
     app.register_blueprint(pages_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(auth_bp)      # NEW
-
+    app.register_blueprint(history_bp)
     # ── Create DB tables ──────────────────────────────────────
     with app.app_context():
         # Import all ORM models so SQLAlchemy discovers them before create_all.
