@@ -1,30 +1,36 @@
 from flask import Blueprint, request, jsonify
+from flask_login import current_user
 
 from config import CRISIS_MESSAGE
 from models.chat import ChatRequest, ChatReply
 from models.history import Conversation, Message
 from models.user import db
+
 from services import gemini as ai_service
-from utils.crisis import is_crisis
-from flask_login import current_user
 from services.memory import get_memory, save_memory
 from services.intent_detector import detect_intent
 from services.rate_limit import can_chat
+
+from utils.crisis import is_crisis
+
 
 chat_bp = Blueprint("chat", __name__)
 
 
 @chat_bp.route("/api/chat", methods=["POST"])
 def chat():
-    """Handle a single chat turn"""
+    """Main Chat API"""
 
     raw_data = request.get_json(force=True, silent=True) or {}
     chat_request = ChatRequest.from_json(raw_data)
 
     if not chat_request.message:
-        return jsonify({"error": "Message khaali nahi ho sakta"}), 400
+        return jsonify({
+            "error": "Message khaali nahi ho sakta"
+        }), 400
 
-    # -------- Free Usage Limit --------
+    # ---------------- Rate Limit ----------------
+
     if current_user.is_authenticated:
         user_key = f"user_{current_user.id}"
     else:
@@ -36,7 +42,8 @@ def chat():
             "crisis": False
         }), 429
 
-    # -------- Crisis Check --------
+    # ---------------- Crisis Check ----------------
+
     if is_crisis(chat_request.message):
         return jsonify(
             ChatReply(
@@ -45,7 +52,8 @@ def chat():
             ).to_dict()
         )
 
-    # -------- API Check --------
+    # ---------------- Gemini API Check ----------------
+
     if not ai_service.is_configured():
         return jsonify({
             "error": "GEMINI_API_KEY set nahi hai server par"
@@ -53,48 +61,91 @@ def chat():
 
     try:
 
-    memory = {}
+        # -------- User Memory --------
 
-    if current_user.is_authenticated:
-        memory = get_memory(current_user.id)
+        memory = {}
 
-        text = chat_request.message.lower()
+        if current_user.is_authenticated:
 
-        if "mera naam" in text:
-            name = (
-                chat_request.message
-                .replace("Mera naam", "")
-                .replace("mera naam", "")
-                .replace("hai", "")
-                .strip()
+            memory = get_memory(current_user.id)
+
+            text = chat_request.message.lower()
+
+            if "mera naam" in text:
+
+                name = (
+                    chat_request.message
+                    .replace("Mera naam", "")
+                    .replace("mera naam", "")
+                    .replace("hai", "")
+                    .strip()
+                )
+
+                if name:
+                    save_memory(current_user.id, "name", name)
+                    memory["name"] = name
+
+        # -------- Intent Detection --------
+
+        intent = detect_intent(chat_request.message)
+
+        prompt = f"""
+Detected Intent: {intent}
+
+Respond according to the user's health topic.
+
+If the user asks about:
+- Mental health → be calm and supportive.
+- Physical health → explain simply.
+- Nutrition → give healthy food advice.
+- Exercise → encourage safe exercise.
+- Education → motivate and guide.
+- General → answer normally.
+"""
+
+        reply_text = ai_service.generate_reply(
+            user_message=chat_request.message,
+            history=chat_request.history,
+            memory=memory,
+            system_prompt=prompt
+                    # -------- Save Chat History --------
+
+        if current_user.is_authenticated:
+
+            conversation = (
+                Conversation.query
+                .filter_by(user_id=current_user.id)
+                .order_by(Conversation.updated_at.desc())
+                .first()
             )
 
-            if name:
-                save_memory(current_user.id, "name", name)
-                memory["name"] = name
-
-    # -------- Intent Detection --------
-    intent = detect_intent(chat_request.message)
-
-    reply_text = ai_service.generate_reply(
-        chat_request.message,
-        chat_request.history,
-        memory=memory,
-        system_prompt=f"Detected Intent: {intent}"
-    )
-
-)
-
-        # -------- Save Chat History --------
-        if current_user.is_authenticated:
-            conversation = Conversation.query.filter_by(user_id=current_user.id).order_by(Conversation.updated_at.desc()).first()
             if conversation is None:
-                conversation = Conversation(user_id=current_user.id, title=chat_request.message[:40])
+                conversation = Conversation(
+                    user_id=current_user.id,
+                    title=chat_request.message[:40]
+                )
                 db.session.add(conversation)
                 db.session.commit()
-            db.session.add(Message(conversation_id=conversation.id, role="user", content=chat_request.message))
-            db.session.add(Message(conversation_id=conversation.id, role="assistant", content=reply_text))
+
+            db.session.add(
+                Message(
+                    conversation_id=conversation.id,
+                    role="user",
+                    content=chat_request.message
+                )
+            )
+
+            db.session.add(
+                Message(
+                    conversation_id=conversation.id,
+                    role="assistant",
+                    content=reply_text
+                )
+            )
+
             db.session.commit()
+
+        # -------- Return Response --------
 
         return jsonify(
             ChatReply(
@@ -104,10 +155,12 @@ def chat():
         )
 
     except Exception as e:
+
         return jsonify(
             ChatReply(
-                reply="Kuch technical problem ho gaya. Thodi der me phir try karo.",
+                reply="Kuch technical problem ho gaya. Thodi der baad phir try kariye.",
                 crisis=False,
                 error=str(e)
             ).to_dict()
-        ), 500
+        ), 500          )
+        
