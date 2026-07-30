@@ -69,15 +69,14 @@ def chat():
                     .strip()
                 )
 
-                if name:
-                    save_memory(current_user.id, "name", name)
-                    memory["name"] = name
-intent = detect_intent(chat_request.message)
-        reply_text = ai_service.generate_reply(
-            chat_request.message,
-            chat_request.history,
-            memory=memory
-        )
+                intent = detect_intent(chat_request.message)
+
+reply_text = ai_service.generate_reply(
+    chat_request.message,
+    chat_request.history,
+    memory=memory,
+    system_prompt=f"Detected Intent: {intent}"
+)
 
         # -------- Save Chat History --------
         if current_user.is_authenticated:
