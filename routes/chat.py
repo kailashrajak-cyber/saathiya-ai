@@ -72,7 +72,7 @@ def chat():
                 if name:
                     save_memory(current_user.id, "name", name)
                     memory["name"] = name
-
+intent = detect_intent(chat_request.message)
         reply_text = ai_service.generate_reply(
             chat_request.message,
             chat_request.history,
