@@ -53,29 +53,36 @@ def chat():
 
     try:
 
-        memory = {}
+    memory = {}
 
-        if current_user.is_authenticated:
-            memory = get_memory(current_user.id)
+    if current_user.is_authenticated:
+        memory = get_memory(current_user.id)
 
-            text = chat_request.message.lower()
+        text = chat_request.message.lower()
 
-            if "mera naam" in text:
-                name = (
-                    chat_request.message
-                    .replace("Mera naam", "")
-                    .replace("mera naam", "")
-                    .replace("hai", "")
-                    .strip()
-                )
+        if "mera naam" in text:
+            name = (
+                chat_request.message
+                .replace("Mera naam", "")
+                .replace("mera naam", "")
+                .replace("hai", "")
+                .strip()
+            )
 
-                intent = detect_intent(chat_request.message)
+            if name:
+                save_memory(current_user.id, "name", name)
+                memory["name"] = name
 
-reply_text = ai_service.generate_reply(
-    chat_request.message,
-    chat_request.history,
-    memory=memory,
-    system_prompt=f"Detected Intent: {intent}"
+    # -------- Intent Detection --------
+    intent = detect_intent(chat_request.message)
+
+    reply_text = ai_service.generate_reply(
+        chat_request.message,
+        chat_request.history,
+        memory=memory,
+        system_prompt=f"Detected Intent: {intent}"
+    )
+
 )
 
         # -------- Save Chat History --------
