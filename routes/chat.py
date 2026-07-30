@@ -8,6 +8,7 @@ from services import gemini as ai_service
 from utils.crisis import is_crisis
 from flask_login import current_user
 from services.memory import get_memory, save_memory
+from services.intent_detector import detect_intent
 from services.rate_limit import can_chat
 
 chat_bp = Blueprint("chat", __name__)
